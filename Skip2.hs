@@ -2,13 +2,16 @@
 module Skip2 (makeSkip
              , skipTo
              , Skip
-             ,skipElem                   
+             ,skipElem
+             ,skipHalf
+             ,skipToEight
+             ,depth
              ) where
 
 data Skip a = Item a | List [Skip a] deriving (Show)
 
-makeSkip :: Functor f => f a -> f (Skip a)
-makeSkip = fmap Item
+makeSkip :: [a] -> [Skip a]
+makeSkip = map Item
 
 skipHalf :: [Skip a] -> [Skip a]
 skipHalf [] = []
@@ -50,9 +53,31 @@ skipTo e l@(_:second:_)
   ,e <= val = l
   | otherwise = skipTo e $ skipHalf l
 
+
+--Like skipTo, but leaves off the top node with up to eight branches before the number
+skipToEight :: Ord a => a -> [Skip a] -> [Skip a]
+skipToEight _ [] = []
+skipToEight _ [x] = [x]
+skipToEight _ [x,y] = [x,y]
+skipToEight e l = go l (0::Int)
+  where
+    --go :: Ord a => [Skip a] -> Int -> [Skip a]
+    go [] _ = []
+    go [x] _ = [x]
+    go (_: rest@(second:_)) n
+      | Just val <- getLeftVal second
+      ,e <= val = l
+      | n < 16 = (go rest (n+1))
+      | otherwise = skipToEight e (skipHalf l)
+    
 -- skipNums = makeSkip [1..10]
 -- skipEvens = makeSkip [0,2..10]
 
 -- skipIn l = zip testList $ fmap (\x -> skipElem x l) testList
 --   where
 --     testList = [(-5)..13]
+
+depth :: Num b => [Skip a] -> b
+depth [] = 0
+depth (Item _:_)  = 1
+depth (List x:_) = 1 + depth x

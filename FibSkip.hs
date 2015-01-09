@@ -1,7 +1,8 @@
 module Main (main) where
 
+import qualified Data.Set as Set
 import Skip
-import Data.List (elem)
+import Data.List (elem, foldl')
 
 fibs :: (Num a) => [a]
 fibs = 0:1:zipWith (+) fibs (tail fibs)
@@ -42,7 +43,7 @@ makeEvenSkip x = skipTo x skipEvens
 -- depth (Skip _ x:_) = 1 + depth x
 
 main :: IO ()
-main = main1
+main = main1 >> main3
 
 addList :: [Integer]
 addList = [0,2..(80000)]
@@ -59,3 +60,9 @@ main1 = print $ and elems
 main2 :: IO ()
 main2 = print $ and elems
   where elems = fmap (\x -> elem (bigEvenNum - x) evens) addList
+
+main3 :: IO ()
+main3 = print $ and elems
+  where
+    set = Set.fromDistinctAscList $ take (fromInteger bigEvenNum) evens
+    elems = fmap (\x -> Set.member (bigEvenNum - x) set) addList
