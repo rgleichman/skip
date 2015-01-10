@@ -45,7 +45,8 @@ makeEvenSkip x = skipTo x skipEvens
 -- depth (List x:_) = 1 + depth x
 
 main :: IO ()
-main = main1
+--main = main1
+main = main3
 
 addList :: [Integer]
 --addList = [0,2..(80000)]
@@ -60,7 +61,7 @@ main1 = do
   where
     --skippedEvens = skipHalfN 18 $ skipEvens -- 18 is 
     --skippedEvens = makeEvenSkip bigEvenNum
-    skippedEvens = skipToEight bigEvenNum . makeSkip $ evens -- takes .43 s - .46s , depth 19
+    skippedEvens = skipToN 16 bigEvenNum . makeSkip $ evens -- takes .43 s - .46s , depth 19
     elems = fmap (\x -> skipElem (bigEvenNum - x) skippedEvens) addList
 
 main1a :: IO ()

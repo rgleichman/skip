@@ -1,11 +1,13 @@
-{-# LANGUAGE PatternGuards #-}
+{-# LANGUAGE PatternGuards , BangPatterns#-}
 module Skip2 (makeSkip
              , skipTo
+             , skipToN
              , Skip
              ,skipElem
              ,skipHalf
              ,skipToEight
              ,depth
+             ,skipN
              ) where
 
 data Skip a = Item a | List [Skip a] deriving (Show)
@@ -13,10 +15,32 @@ data Skip a = Item a | List [Skip a] deriving (Show)
 makeSkip :: [a] -> [Skip a]
 makeSkip = map Item
 
+{-
 skipHalf :: [Skip a] -> [Skip a]
 skipHalf [] = []
 skipHalf [x] = [x]
 skipHalf l@(_:_:rest) = List l:(skipHalf rest)
+-}
+
+skipHalf :: [Skip a] -> [Skip a]
+skipHalf = skipN 2
+--skipHalf = skipN 8
+
+--skipN :: Integer -> [Skip a] -> [Skip a]
+skipN :: Int -> [Skip a] -> [Skip a]
+skipN _ [] = []
+skipN _ [x] = [x]
+skipN n l
+  | n < 1 = l
+  |otherwise = List l: (go n l)
+    where
+      go 0 goL = (List goL): go n goL
+      go i (_:rest) = go (i-1) rest
+      go _ [] = []
+      --go [] = []
+      --go goL = List next : (go next)
+      --  where next = drop n goL
+                   
 
 skipElem :: Ord a => a -> [Skip a] -> Bool
 skipElem _ [] = False
@@ -69,8 +93,23 @@ skipToEight e l = go l (0::Int)
       ,e <= val = l
       | n < 16 = (go rest (n+1))
       | otherwise = skipToEight e (skipHalf l)
-    
--- skipNums = makeSkip [1..10]
+
+skipToN :: Ord a => Int -> a -> [Skip a] -> [Skip a]
+skipToN _ _ [] = []
+skipToN _ _ [x] = [x]
+skipToN _ _ [x,y] = [x,y]
+skipToN i e l = go l (0::Int)
+  where
+    --go :: Ord a => [Skip a] -> Int -> [Skip a]
+    go [] _ = []
+    go [x] _ = [x]
+    go (_: rest@(second:_)) n
+      | Just val <- getLeftVal second
+      ,e <= val = l
+      | n < i = (go rest (n+1))
+      | otherwise = skipToN i e (skipN i l)
+
+skipNums = makeSkip [1..10]
 -- skipEvens = makeSkip [0,2..10]
 
 -- skipIn l = zip testList $ fmap (\x -> skipElem x l) testList
