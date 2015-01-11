@@ -48,7 +48,7 @@ makeEvenSkip x = skipTo x skipEvens
 
 main :: IO ()
 --main = main1
-main = main1b
+main = main3
 
 addList :: [Integer]
 --addList = [0,2..(80000)]
@@ -75,12 +75,13 @@ main1a = print $ and elems
     --skippedEvens = skipToEight bigEvenNum . makeSkip $ evens
     elems = fmap (\x -> skipElem (bigEvenNum - x) skippedEvens) addList
 
+-- 0.18 sec
 main1b :: IO ()
 main1b = print $ and elems
   where
     skippedEvens =
       --Skip3.skipToN 16 bigEvenNum .
-      Skip3.skipToN 8 bigEvenNum .
+      Skip3.skipToN 16 bigEvenNum .
       Skip3.makeSkip $ evens -- takes .43 s - .46s , depth 19
     elems = fmap (\x -> Skip3.skipElem (bigEvenNum - x) skippedEvens) addList
 
@@ -95,6 +96,7 @@ main2 = print $ and elems
   where elems = fmap (\x -> elem (bigEvenNum - x) evens) addList
 
 
+-- 0.6 s
 main3 :: IO ()
 main3 = print $ and elems
   where
@@ -113,3 +115,9 @@ main4 = print $ and elems
     set = Map.fromDistinctAscList . take (1 + bigEvenNumIndex) $ pairedEvens
     pairedEvens = fmap (\x -> (x,())) $ evens
     elems = fmap (\x -> Map.member (bigEvenNum - x) set) addList
+
+
+main5 :: IO ()
+main5 = print $ inList
+  where
+    inList = elem bigEvenNum evens
