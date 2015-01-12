@@ -1,4 +1,4 @@
-{-# LANGUAGE PatternGuards , BangPatterns#-}
+{-# LANGUAGE PatternGuards #-}
 module Skip3 (makeSkip
 --             , skipTo
              , skipToN
@@ -14,33 +14,6 @@ data Skip a = Base [a] | List [Skip a] deriving (Show)
 
 makeSkip :: [a] -> Skip a
 makeSkip = Base
-
-{-
-skipHalf :: [Skip a] -> [Skip a]
-skipHalf [] = []
-skipHalf [x] = [x]
-skipHalf l@(_:_:rest) = List l:(skipHalf rest)
--}
-
---skipHalf :: [Skip a] -> [Skip a]
---skipHalf = skipN 2
-
---skipHalf = skipN 8
-
---skipN :: Integer -> [Skip a] -> [Skip a]
--- skipN :: Int -> [Skip a] -> [Skip a]
--- skipN _ [] = []
--- skipN _ [x] = [x]
--- skipN n l
---   | n < 1 = l
---   |otherwise = List l: (go n l)
---     where
---       go 0 goL = (List goL): go n goL
---       go i (_:rest) = go (i-1) rest
---       go _ [] = []
-      --go [] = []
-      --go goL = List next : (go next)
-      --  where next = drop n goL
 
 skipN :: Int -> Skip a -> Skip a
 skipN n skip
@@ -84,49 +57,6 @@ getLeftVal (Base (x:_)) = Just x
 getLeftVal (List []) = Nothing
 getLeftVal (List (x:_)) = getLeftVal x
 
-
--- Builds a skip list at least as large as the given element.
--- Can be used to construct skip lists from infinite lists.
--- skipTo :: Ord a => a -> [Skip a] -> [Skip a]
--- skipTo _ [] = []
--- skipTo _ [x] = [x]
--- skipTo _ [x,y] = [x,y]
--- skipTo e l@(_:second:_)
---   | Just val <- getLeftVal second
---   ,e <= val = l
---   | otherwise = skipTo e $ skipHalf l
-
- --Like skipTo, but leaves off the top node with up to eight branches before the number
--- skipToEight :: Ord a => a -> [Skip a] -> [Skip a]
--- skipToEight _ [] = []
--- skipToEight _ [x] = [x]
--- skipToEight _ [x,y] = [x,y]
--- skipToEight e l = go l (0::Int)
---   where
---     --go :: Ord a => [Skip a] -> Int -> [Skip a]
---     go [] _ = []
---     go [x] _ = [x]
---     go (_: rest@(second:_)) n
---       | Just val <- getLeftVal second
---       ,e <= val = l
---       | n < 16 = (go rest (n+1))
---       | otherwise = skipToEight e (skipHalf l)
-
--- skipToN :: Ord a => Int -> a -> [Skip a] -> [Skip a]
--- skipToN _ _ [] = []
--- skipToN _ _ [x] = [x]
--- skipToN _ _ [x,y] = [x,y]
--- skipToN i e l = go l (0::Int)
---   where
---     --go :: Ord a => [Skip a] -> Int -> [Skip a]
---     go [] _ = []
---     go [x] _ = [x]
---     go (_: rest@(second:_)) n
---       | Just val <- getLeftVal second
---       ,e <= val = l
---       | n < i = (go rest (n+1))
---       | otherwise = skipToN i e (skipN i l)
-
 skipToN :: Ord a => Int -> a -> Skip a -> Skip a
 skipToN i e baseL@(Base l) = goBase l (0::Int)
   where
@@ -134,7 +64,7 @@ skipToN i e baseL@(Base l) = goBase l (0::Int)
     goBase [_] _ = baseL
     goBase (_:rest@(second:_)) n
       | e <= second = baseL
-      | n < i = (goBase rest (n+1))
+      | n < i = goBase rest (n+1)
       | otherwise = skipToN i e (skipN i baseL)
 skipToN i e upperL@(List l) = goUpper l (0::Int)
   where
@@ -146,10 +76,12 @@ skipToN i e upperL@(List l) = goUpper l (0::Int)
       | n < i = goUpper rest (n+1)
       | otherwise = skipToN i e (skipN i upperL)
 
+skipNums :: Skip Integer
 skipNums = makeSkip [1..10]
 -- skipEvens = makeSkip [0,2..10]
 
-skipIn l = zip testList $ fmap (\x -> skipElem x l) testList
+skipIn :: (Enum a, Num a, Ord a) => Skip a -> [(a, Bool)]
+skipIn l = zip testList $ fmap (`skipElem` l) testList
    where
      testList = [(-5)..13]
 
